@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Add Candidate</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        /* Sidebar Styles */
+        body {
+            display: flex;
+        }
+        #sidebar {
+            width: 250px;
+            height: 100vh;
+            background-color: #343a40;
+            padding-top: 20px;
+            position: fixed;
+            left: 0;
+            top: 0;
+        }
+        #sidebar a {
+            display: block;
+            color: white;
+            padding: 10px;
+            text-decoration: none;
+        }
+        #sidebar a:hover {
+            background-color: #495057;
+        }
+        .content {
+            margin-left: 260px;
+            width: 100%;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div id="sidebar">
+    <h3 class="text-light text-center">Menu</h3>
+    <a href="admin_dashboard.html">🏠 Home</a>
+    <a href="addcandidate.html">➕ Add Candidate</a>
+    <a href="view_candidates.html">📋 View Candidates</a>
+    <a href="userlist.html">👤 View Users</a>
+    <a href="partylist.html">📜 View Parties</a>
+    <a href="openpage.html">🚪 Logout</a>
+</div>
+
+<!-- Main Content -->
+<div class="content">
+    <div class="container mt-4">
+        <h2 class="text-center">Add New Candidate</h2>
+        <form action="AddCandidateServlet" method="post">
+            <div class="mb-3">
+                <label class="form-label">Voter ID</label>
+                <input type="text" name="voterId" id="voterId" class="form-control" required onchange="fetchVoterData()">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">First Name</label>
+                <input type="text" name="firstName" id="firstName" class="form-control" required readonly>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Last Name</label>
+                <input type="text" name="lastName" id="lastName" class="form-control" required readonly>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Date of Birth</label>
+                <input type="date" name="dob" id="dob" class="form-control" required readonly>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Mobile</label>
+                <input type="text" name="mobile" id="mobile" class="form-control" required readonly>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Gender</label>
+                <select name="gender" id="gender" class="form-select" required>
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Party</label>
+                <select name="party" id="party" class="form-select" required>
+                    <option value="TVN">TVN</option>
+                    <option value="DWK">DWK</option>
+                    <option value="SWR">SWR</option>
+                    <option value="GRS">GRS</option>
+                    <option value="VCG">VCG</option>
+                    <option value="VCA">VCA</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Candidate</button>
+        </form>
+    </div>
+</div>
+
+<!-- Fetch Data Scripts -->
+<script>
+    function fetchVoterData() {
+        var voterId = document.getElementById("voterId").value;
+        if (voterId === "") return;
+
+        $.ajax({
+            url: "FetchVoterDataServlet",
+            method: "GET",
+            data: { voterId: voterId },
+            dataType: "json",
+            success: function(response) {
+                if (response.success) {
+                    $("#firstName").val(response.firstName);
+                    $("#lastName").val(response.lastName);
+                    $("#dob").val(response.dob);
+                    $("#mobile").val(response.mobile);
+                    $("#gender").val(response.gender);
+                } else {
+                    alert("Voter ID not found!");
+                }
+            },
+            error: function() {
+                alert("Error fetching voter data.");
+            }
+        });
+    }
+
+    function fetchParties() {
+        $.ajax({
+            url: "FetchPartiesServlet",
+            method: "GET",
+            dataType: "json",
+            success: function(data) {
+                var partyDropdown = $("#party");
+                partyDropdown.html('<option value="">Select Party</option>');
+                data.parties.forEach(party => {
+                    partyDropdown.append(`<option value="${party}">${party}</option>`);
+                });
+            },
+            error: function() {
+                console.error("Error fetching parties.");
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        fetchParties();
+    });
+</script>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

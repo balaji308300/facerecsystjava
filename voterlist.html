@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voter List - E-Voting</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .sidebar {
+            height: 100vh;
+            width: 250px;
+            position: fixed;
+            background: #343a40;
+            color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+        }
+        .sidebar a:hover {
+            background: #495057;
+        }
+        .sidebar a.text-danger {
+            margin-top: auto;
+        }
+        .content {
+            margin-left: 260px;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        th {
+            background: #007bff;
+            color: white;
+        }
+        .btn-danger {
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <h3>E-Voting Admin</h3>
+    <a href="admin_dashboard.html">🏠 Home</a>
+    <a href="userlist.html">👥 User List</a>
+    <a href="add_party.html">➕ Add Political Party</a>
+    <a href="partylist.html">📜 Political Party List</a>
+    <a href="addcandidate.html">➕ Add Candidate</a>
+    <a href="view_candidate.html">📜 Candidate List</a>
+    <a href="addelection.html">🗳️ Add Election</a>
+    <a href="election-list.html">📜 Election List</a>
+    <a href="facetraining.jsp">📸 Face Training</a>
+    <a href="voterlist.html" class="bg-primary">🗳️ Voter List</a>
+    <a href="viewresult.html">📊 View Results</a>
+    <a href="openpage.html" class="text-danger">🚪 Logout</a>
+</div>
+
+<!-- Content -->
+<div class="content">
+    <h2>Voter List</h2>
+    <p>Below is the list of registered voters.</p>
+    <!-- Insert Voter Section -->
+<div class="mb-3">
+    <input type="text" id="voterIdInput" class="form-control" placeholder="Enter Voter ID">
+    <button class="btn btn-success mt-2" onclick="addVoter()">Insert</button>
+</div>
+    
+
+    <!-- Table -->
+    <table>
+        <thead>
+            <tr>
+                <th>Voter ID</th>
+                <th>Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="voterTableBody">
+            <!-- Data will be loaded dynamically here -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+$(document).ready(function () {
+	// Function to add a voter
+	window.addVoter = function () {
+	    var voterId = $("#voterIdInput").val().trim();
+	    if (voterId === "") {
+	        alert("Please enter a Voter ID");
+	        return;
+	    }
+	    
+	    $.ajax({
+	        url: "AddVoterServlet", // Update with the correct backend URL
+	        type: "POST",
+	        data: { voterId: voterId },
+	        success: function (response) {
+	            alert(response.message);
+	            $("#voterIdInput").val(""); // Clear input field
+	            loadVoters(); // Reload the voter list
+	        },
+	        error: function () {
+	            alert("Error adding voter");
+	        }
+	    });
+	};
+
+    // Fetch voter list from the server
+    function loadVoters() {
+        $.ajax({
+            url: "VoterListServlet",  // Update with the correct backend URL
+            type: "GET",
+            dataType: "json",
+            success: function (response) {
+                var tableBody = $("#voterTableBody");
+                tableBody.empty(); // Clear previous data
+                
+                if (response.length > 0) {
+                    response.forEach(function (voter) {
+                        var row = `<tr>
+                            <td>${voter.voterId}</td>
+                            <td>${voter.date}</td>
+                            <td><button class="btn btn-danger btn-sm" onclick="deleteVoter('${voter.voterId}')">Delete</button></td>
+                        </tr>`;
+                        tableBody.append(row);
+                    });
+                } else {
+                    tableBody.append("<tr><td colspan='3'>No voters found</td></tr>");
+                }
+            },
+            error: function () {
+                $("#voterTableBody").html("<tr><td colspan='3'>Error loading voters</td></tr>");
+            }
+        });
+    }
+
+    // Function to delete voter
+    window.deleteVoter = function (voterId) {
+        if (confirm("Are you sure you want to delete this voter?")) {
+            $.ajax({
+                url: "DeleteVoterServlet", // Update with the correct backend URL
+                type: "POST",
+                data: { voterId: voterId },
+                success: function (response) {
+                    alert(response.message);
+                    loadVoters(); // Reload the list after deletion
+                },
+                error: function () {
+                    alert("Error deleting voter");
+                }
+            });
+        }
+    };
+
+    // Load voters on page load
+    loadVoters();
+});
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

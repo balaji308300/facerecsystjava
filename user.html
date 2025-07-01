@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        #camera {
+            width: 100%;
+            height: 300px;
+            border: 2px solid #000;
+            margin-bottom: 10px;
+        }
+        .error {
+            color: red;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <h2 class="text-center">User Registration</h2>
+        <form id="registrationForm" action="RegisterServlet" method="post" enctype="multipart/form-data">
+            <div class="row">
+                <div class="col-md-6">
+                    <label class="form-label">First Name</label>
+                    <input type="text" class="form-control" name="firstname" id="firstname" required>
+                    <span class="error" id="fnameError"></span>
+
+                    <label class="form-label mt-2">Last Name</label>
+                    <input type="text" class="form-control" name="lastname" id="lastname" required>
+                    <span class="error" id="lnameError"></span>
+
+                    <label class="form-label mt-2">Proof ID</label>
+                    <input type="text" class="form-control" name="proof_id" id="proof_id" required>
+                    <span class="error" id="proofError"></span>
+
+                    <label class="form-label mt-2">Password</label>
+                    <input type="password" class="form-control" name="password" id="password" required>
+                    <span class="error" id="passwordError"></span>
+
+                    <label class="form-label mt-2">Mobile</label>
+                    <input type="text" class="form-control" name="mobile" id="mobile" required>
+                    <span class="error" id="mobileError"></span>
+
+                    <label class="form-label mt-2">Date of Birth</label>
+                    <input type="date" class="form-control" name="dob" id="dob" required>
+                    <span class="error" id="dobError"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Email ID</label>
+                    <input type="email" class="form-control" name="email" id="email" required>
+                    <span class="error" id="emailError"></span>
+
+                    <label class="form-label mt-2">Gender</label>
+                    <select class="form-control" name="gender" id="gender" required>
+                        <option value="">Select</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <span class="error" id="genderError"></span>
+
+                    <label class="form-label mt-2">Role</label>
+                    <select class="form-control" name="role" id="role" required>
+                        <option value="">Select</option>
+                        <option value="Voter">Voter</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                    <span class="error" id="roleError"></span>
+
+                    <label class="form-label mt-2">Capture Face</label>
+                    <video id="camera" autoplay></video>
+                    <canvas id="canvas" style="display:none;"></canvas>
+                    <button type="button" class="btn btn-primary" id="captureBtn">Capture</button>
+                    <input type="hidden" name="face_image" id="face_image">
+                    <span class="error" id="faceError"></span>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-success mt-3 w-100">Register</button>
+        </form>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $("#registrationForm").submit(function (e) {
+                let isValid = true;
+
+                // First Name Validation (Only letters)
+                let firstName = $("#firstname").val();
+                if (!/^[a-zA-Z]+$/.test(firstName)) {
+                    $("#fnameError").text("Only alphabets are allowed");
+                    isValid = false;
+                } else {
+                    $("#fnameError").text("");
+                }
+
+                // Last Name Validation (Only letters)
+                let lastName = $("#lastname").val();
+                if (!/^[a-zA-Z]+$/.test(lastName)) {
+                    $("#lnameError").text("Only alphabets are allowed");
+                    isValid = false;
+                } else {
+                    $("#lnameError").text("");
+                }
+
+                // Proof ID Validation
+                let proofID = $("#proof_id").val();
+                if (proofID.trim() === "") {
+                    $("#proofError").text("Proof ID is required");
+                    isValid = false;
+                } else {
+                    $("#proofError").text("");
+                }
+
+                // Password Validation (Minimum 6 characters)
+                let password = $("#password").val();
+                if (password.length < 6) {
+                    $("#passwordError").text("Password must be at least 6 characters");
+                    isValid = false;
+                } else {
+                    $("#passwordError").text("");
+                }
+
+                // Mobile Number Validation (10-digit numeric)
+                let mobile = $("#mobile").val();
+                if (!/^\d{10}$/.test(mobile)) {
+                    $("#mobileError").text("Enter a valid 10-digit mobile number");
+                    isValid = false;
+                } else {
+                    $("#mobileError").text("");
+                }
+
+                // Email Validation
+                let email = $("#email").val();
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    $("#emailError").text("Enter a valid email address");
+                    isValid = false;
+                } else {
+                    $("#emailError").text("");
+                }
+
+                // DOB Validation (Should be selected)
+                let dob = $("#dob").val();
+                if (dob.trim() === "") {
+                    $("#dobError").text("Date of birth is required");
+                    isValid = false;
+                } else {
+                    $("#dobError").text("");
+                }
+
+                // Gender Validation
+                let gender = $("#gender").val();
+                if (gender === "") {
+                    $("#genderError").text("Please select your gender");
+                    isValid = false;
+                } else {
+                    $("#genderError").text("");
+                }
+
+                // Role Validation
+                let role = $("#role").val();
+                if (role === "") {
+                    $("#roleError").text("Please select a role");
+                    isValid = false;
+                } else {
+                    $("#roleError").text("");
+                }
+
+                // Face Capture Validation
+                if ($("#face_image").val().trim() === "") {
+                    $("#faceError").text("Face capture is required");
+                    isValid = false;
+                } else {
+                    $("#faceError").text("");
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        // Camera Setup
+        const video = document.getElementById("camera");
+        const canvas = document.getElementById("canvas");
+        const captureBtn = document.getElementById("captureBtn");
+        const faceImageInput = document.getElementById("face_image");
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => { video.srcObject = stream; })
+            .catch(err => console.log("Camera Access Denied", err));
+
+        captureBtn.addEventListener("click", function () {
+            const context = canvas.getContext("2d");
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            faceImageInput.value = canvas.toDataURL("image/png");
+        });
+    </script>
+</body>
+</html>

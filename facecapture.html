@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Capture - E-Voting</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background-color: #343a40;
+            padding-top: 20px;
+        }
+        .sidebar a {
+            color: white;
+            padding: 10px 20px;
+            display: block;
+            text-decoration: none;
+        }
+        .sidebar a:hover {
+            background-color: #495057;
+        }
+        .content {
+            margin-left: 260px;
+            padding: 20px;
+        }
+        #video, #canvas {
+            display: block;
+            margin: 10px auto;
+            border: 2px solid #333;
+        }
+        #captureCountDisplay {
+            font-weight: bold;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h4 class="text-white text-center">E-Voting</h4>
+        <a href="user.html">Home</a>
+        <a href="election.html">Election</a>
+        <a href="#results">Results</a>
+        <a href="#" id="editProfileLink">Edit Profile</a>
+        <a href="facecapture.html" class="active">Face Capture Registration</a>
+        <a href="openpage.html" class="btn btn-danger btn-sm w-100 mt-2">Logout</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <div class="container text-center mt-4">
+            <h2>Face Capture Registration</h2>
+            <p>Use the button below to capture your face for registration.</p>
+
+            <video id="video" width="320" height="240" autoplay></video>
+            <button id="captureBtn" class="btn btn-primary mt-2">Capture</button>
+            <p id="captureCountDisplay">Captured Images: 0 / 30</p>
+            <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+        </div>
+    </div>
+
+    <!-- JavaScript for Face Capture -->
+    <script>
+        $(document).ready(function() {
+            let voterId = localStorage.getItem("voterId");
+            if (!voterId) {
+                alert("Voter ID not found. Please log in again.");
+                window.location.href = "openpage.html";
+            }
+
+            $("#editProfileLink").attr("href", "edituserprofile.html?voterId=" + voterId);
+
+            let video = document.getElementById('video');
+            let canvas = document.getElementById('canvas');
+            let captureBtn = document.getElementById('captureBtn');
+            let captureCountDisplay = document.getElementById("captureCountDisplay");
+
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => { video.srcObject = stream; })
+                .catch(err => { console.error("Error accessing camera: ", err); });
+
+            captureBtn.addEventListener("click", function () {
+                const context = canvas.getContext("2d");
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+
+                let capturedImages = [];
+                let captureCount = 0;
+                const maxSamples = 30;
+
+                function captureFrame() {
+                    if (captureCount >= maxSamples) {
+                        uploadImages(capturedImages);
+                        return;
+                    }
+
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    let imageData = canvas.toDataURL("image/png");
+                    capturedImages.push(imageData);
+
+                    captureCount++;
+                    captureCountDisplay.innerText = `Captured Images: ${captureCount} / ${maxSamples}`;
+
+                    setTimeout(captureFrame, 500);
+                }
+
+                captureFrame();
+            });
+
+            function uploadImages(images) {
+                fetch("FaceCaptureServlet", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ voterId: voterId, images: images, sampleType: "registration" })
+                }).then(response => response.text())
+                  .then(data => {
+                      console.log("Server Response:", data);
+                      alert(`Face samples stored: ${images.length} / 30\nServer Response: ${data}`);
+                  })
+                  .catch(error => console.error("Error:", error));
+            }
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

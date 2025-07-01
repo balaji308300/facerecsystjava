@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Election List</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 250px;
+            background: #343a40;
+            color: white;
+            padding: 20px;
+            height: 100vh;
+            position: fixed;
+        }
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+        }
+        .sidebar a:hover {
+            background: #495057;
+        }
+        .content {
+            margin-left: 250px;
+            width: 100%;
+            padding: 20px;
+        }
+        .table-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h3 class="text-center">Admin Panel</h3>
+        <a href="admin_dashboard.html">🏠 Home</a>
+        <a href="add-election.html">🗳️ Add Election</a>
+        <a href="election-list.html" class="bg-primary">📋 Election List</a>
+    </div>
+
+    <!-- Content Section -->
+    <div class="content">
+        <div class="table-container">
+            <h2 class="text-center mb-4">Election List</h2>
+            <table class="table table-bordered text-center">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Election Name</th>
+                        <th>Date</th>
+                        <th>Start Time</th>
+                        <th>End Time</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="electionTableBody">
+                    <!-- Data will be inserted here dynamically -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function fetchElections() {
+        fetch('ElectionListServlet')
+            .then(response => response.json())
+            .then(data => {
+                let tableBody = document.getElementById('electionTableBody');
+                tableBody.innerHTML = ''; // Clear previous data
+
+                data.forEach(election => {
+                    let row = `<tr>
+                        <td>${election.id}</td>
+                        <td>${election.name}</td>
+                        <td>${election.date}</td>
+                        <td>${election.start_time}</td>
+                        <td>${election.end_time}</td>
+                        <td>
+                            <a href="edit-election.html?id=${election.id}" class="btn btn-warning btn-sm">✏ Edit</a>
+                            <a href="DeleteElectionServlet?id=${election.id}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this election?');">🗑 Delete</a>
+                        </td>
+                    </tr>`;
+                    tableBody.innerHTML += row;
+                });
+            })
+            .catch(error => console.error('Error fetching election data:', error));
+    }
+
+    document.addEventListener('DOMContentLoaded', fetchElections);
+</script>
+
+</body>
+</html>
